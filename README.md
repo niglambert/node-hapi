@@ -39,7 +39,28 @@ INSERT INTO tasks (title, description) VALUES
 SELECT * FROM tasks;
 ```
 
-### Launch Hapi Web App
+### Configure PostgreSQL Connection Details
+```
+// hapi-server.js
+const client = new Client({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'task_manager',
+    password: 'pwd',
+    port: 5432,
+});
+```
+
+### Configure Hapi Server Connection Details
+```
+// hapi-server-with-prisma.js
+const server = Hapi.server({
+    port: 3000,
+    host: 'localhost',
+});
+```
+
+### Launch Hapi Web Server
 ```
 node hapi-server.js
 ```
@@ -68,13 +89,13 @@ npm install @prisma/client
 npx prisma init -y
 ```
 
-### Configure Prisma with PostgreSQL Connection String
+### Configure Prisma with PostgreSQL Connection Details
 ```
 # .env
 DATABASE_URL="postgres://postgres:pwd@localhost:5432/postgres"
 ```
 
-### Configure Prisma
+### Configure Prisma Schema
 ```
 # Generate Prisma schema from existing database
 # Updates prisma\prisma.schema file
@@ -84,7 +105,7 @@ npx prisma introspect
 npx prisma generate
 ```
 
-### Launch Hapi Web App
+### Launch Hapi Web Server
 ```
 # Run the Hapi server using Prisma for DB Access
 node hapi-server-with-prisma.js
