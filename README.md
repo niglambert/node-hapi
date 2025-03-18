@@ -39,7 +39,7 @@ INSERT INTO tasks (title, description) VALUES
 SELECT * FROM tasks;
 ```
 
-### Configure PostgreSQL Connection Details
+### Configure Hapi with PostgreSQL Connection Details
 ```
 // hapi-server.js
 const client = new Client({
@@ -51,7 +51,7 @@ const client = new Client({
 });
 ```
 
-### Configure Hapi Server Connection Details
+### Configure Hapi Connection Details
 ```
 // hapi-server-with-prisma.js
 const server = Hapi.server({
