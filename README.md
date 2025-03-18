@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Test Hapi Web Server with PostgreSQL & Prisma
 
 ## Getting Started
 
-First, run the development server:
+### Install Hapi Packages
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+# Create new project
+mkdir task-manager-poc
+cd task-manager-poc
+npm init -y
+
+# @hapi/hapi:  Hapi.js web app API
+# pg:          PostgreSQL client for Node.js.
+# joi:         Web app incoming data validation
+npm install @hapi/hapi pg joi
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Launch PostgreSQL Container & Seed
+```
+docker run -e POSTGRES_PASSWORD=pwd --name=pg --rm -d -p 5432:5432 postgres:14
+docker exec -u postgres -it pg psql
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+CREATE DATABASE task_manager;
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+\c task_manager
 
-## Learn More
+CREATE TABLE tasks (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(100) NOT NULL,
+  description TEXT NOT NULL,
+  completed BOOLEAN DEFAULT FALSE
+);
 
-To learn more about Next.js, take a look at the following resources:
+INSERT INTO tasks (title, description) VALUES
+('Deploy to Staging', 'Deploy the latest version of the app to the staging environment.'),
+('Create User Guide', 'Develop a user guide for the new features of the app.');
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+SELECT * FROM tasks;
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Launch Hapi Web App
+```
+node hapi-server.js
+```
 
-## Deploy on Vercel
+### Test
+```
+# Get tasks
+curl http://localhost:3000/tasks
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Add task
+curl -X POST http://localhost:3000/tasks -H "Content-Type: application/json" -d '{"title": "New", "description": "New task."}'
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Update task
+curl -X PUT http://localhost:3000/tasks/1 -H "Content-Type: application/json" -d '{"title": "Updated", "description": "Updated task", "completed": true}'
+
+# Delete task
+curl -X DELETE 1
+```
+
+## With Prisma
+
+### Install Prisma Packages
+```
+# Prisma
+npm install @prisma/client
+npx prisma init -y
+```
+
+### Configure Prisma with PostgreSQL Connection String
+```
+# .env
+DATABASE_URL="postgres://postgres:pwd@localhost:5432/postgres"
+```
+
+### Configure Prisma
+```
+# Generate Prisma schema from existing database
+# Updates prisma\prisma.schema file
+npx prisma introspect
+
+# Run generate in case environment vars updated
+npx prisma generate
+```
+
+### Launch Hapi Web App
+```
+# Run the Hapi server using Prisma for DB Access
+node hapi-server-with-prisma.js
+```
